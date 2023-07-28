@@ -7,12 +7,9 @@ app = Flask(__name__)
 @app.route('/search', methods=['GET'])
 def search_google():
 
-    print(request.args)
+    args = request.args
+    print(args)
     
-    # first_link = get_first_google_link(query)
-    # if first_link:
-    #     return jsonify({'first_link': first_link})
-    # else:
     return jsonify({'error': 'No links found'})
 
 if __name__ == '__main__':

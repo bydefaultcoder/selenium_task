@@ -6,34 +6,66 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import Select,WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
+from selenium.common.exceptions import NoSuchElementException
+import re
+
+def is_valid_number(num):
+    # Regular expression pattern to match a valid positive integer
+    integer_pattern = r'^[1-9]\d*$'
+
+    # Check if the input matches the pattern
+    if re.match(integer_pattern, num):
+        return True
+    else:
+        return False
+
 
 def selenium_code(case_type,case_number,case_year):
     s = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=s)
     driver.maximize_window()
     driver.get("https://cgat.gov.in/#/lucknow/case-status")
+
+    # for case type
     dropdown_element =  driver.find_element(by=By.XPATH,value="//select[@id='caseTypeId']")
     ele1 = Select(dropdown_element)
+    isCaseTypeValid = False
+        # cecking case type available or not
+    for i in ele1.options:
+        if(case_type == i.text):
+            isCaseTypeValid= True
+    if(not isCaseTypeValid):
+        return {"error":True,"msg":"Case type not found"}
+        # selecting the case type
     ele1.select_by_visible_text(case_type)
+
+    # putting case number
+
+    if(not is_valid_number(case_number)):
+         return {"error":True,"msg":"Case Number is not valid"}
+
+    if(not is_valid_number(case_year)):
+         return {"error":True,"msg":"Case year is not alid"}
 
     ele2 = driver.find_element(by=By.XPATH,value="//input[@id='caseNo']")
     ele2.send_keys(case_number)
 
     ele3 = driver.find_element(by=By.XPATH,value="//input[@id='caseYear']")
-    ele3.send_keys(case_number) 
+    ele3.send_keys(case_year) 
 
     submit = driver.find_element(by=By.XPATH,value="//button[@type='submit']")
     submit.click()
 
-    # step 2
+    # step 2 get the data from table
+    try:
+        wait = WebDriverWait(driver,10)
+        table_xpath = "//div[@class='modal-body']//table"  
 
-    wait = WebDriverWait(driver,10)
-    table_xpath = "//div[@class='modal-body']//table"  # Replace 'table_id' with the actual ID or other identifying attribute of the table
+        wait.until(EC.presence_of_element_located((By.XPATH,table_xpath)))
 
-    wait.until(EC.presence_of_element_located((By.XPATH,table_xpath)))
-
-    table_element = driver.find_element(by=By.XPATH,value=table_xpath)
+        table_element = driver.find_element(by=By.XPATH,value=table_xpath)
+    except NoSuchElementException:
+        return {"error":True,"msg":"data not found chek input or try again later"}    
     # table_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, table_xpath)))
 
     rows = table_element.find_elements(By.TAG_NAME, "tr")
@@ -56,8 +88,7 @@ def selenium_code(case_type,case_number,case_year):
             print(cell.text)
     print(data)        
     driver.close()
-    return data
+    return {"error":False, "msg":"success", "data":data}
 # 
    
-    
-selenium_code()    
+print(selenium_code("Original Application","100","2016"))    
