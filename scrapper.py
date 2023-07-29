@@ -96,6 +96,4 @@ def selenium_code(case_type,case_number,case_year):
     print(data)        
     driver.close()
     return {"error":False, "msg":"success", "data":data}
-# 
-   
 # print(selenium_code("Original Application","100","2016"))    
