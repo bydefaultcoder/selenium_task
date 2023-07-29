@@ -24,7 +24,13 @@ def selenium_code(case_type,case_number,case_year):
     s = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=s)
     driver.maximize_window()
-    driver.get("https://cgat.gov.in/#/lucknow/case-status")
+    try:
+       driver.get("https://cgat.gov.in/#/lucknow/case-status")
+    except:
+        print('website is down')
+        driver.quit()
+        return {"error":True,"msg":"try again later"}
+        
 
     # for case type
     dropdown_element =  driver.find_element(by=By.XPATH,value="//select[@id='caseTypeId']")
@@ -34,6 +40,7 @@ def selenium_code(case_type,case_number,case_year):
     for i in ele1.options:
         if(case_type == i.text):
             isCaseTypeValid= True
+            break
     if(not isCaseTypeValid):
         return {"error":True,"msg":"Case type not found"}
         # selecting the case type
